@@ -26,7 +26,7 @@ This module is for participant-facing execution only. No experimenter UI or live
 
 ## 3. Runtime and Dependencies
 - Python version: `3.12.8`.
-- Presentation library: `pygame` (PsychoPy explicitly avoided).
+- Presentation library: standard-library `tkinter` (PsychoPy explicitly avoided).
 - LSL library: `pylsl`.
 - Target platform: desktop environment capable of full-screen window rendering.
 

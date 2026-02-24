@@ -1,9 +1,10 @@
 # EEG State Labeling Runner
 
-Participant-facing experiment runner for EEG labeling using `pygame` (stimulus display) and `pylsl` (marker stream).
+Participant-facing experiment runner for EEG labeling using standard-library `tkinter` (stimulus display) and `pylsl` (marker stream).
 
 ## Requirements
 - Python `3.12.8`
+- Python build with Tk support (`tkinter`)
 - Desktop environment with display access
 
 ## Install
