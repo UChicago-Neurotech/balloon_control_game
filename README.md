@@ -35,6 +35,7 @@ python3.12 lsl_experiment.py --windowed
 - `--windowed`
 
 ## Controls
+- Click `Start` (or press `Enter` / `Space`) to begin the session.
 - `Esc`: abort immediately and exit.
 
 ## LSL markers

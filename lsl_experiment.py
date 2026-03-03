@@ -198,7 +198,7 @@ def sample_subtraction_prompts(rng: random.Random, count: int) -> list[tuple[int
     prompts: list[tuple[int, int]] = []
     for _ in range(count):
         start_number = rng.randint(100, 999)
-        subtractor = rng.randint(1, 99)
+        subtractor = 7
         prompts.append((start_number, subtractor))
     return prompts
 
@@ -323,6 +323,100 @@ def draw_centered_lines(ui: TkUI, lines: list[Line]) -> None:
     pump_events(ui)
 
 
+def wait_for_start(ui: TkUI) -> None:
+    started = False
+    button_bounds = (0, 0, 0, 0)
+
+    def draw_start_prompt() -> tuple[int, int, int, int]:
+        canvas_w = max(ui.canvas.winfo_width(), 1)
+        canvas_h = max(ui.canvas.winfo_height(), 1)
+
+        ui.canvas.delete("all")
+        ui.canvas.configure(bg=BG_COLOR)
+
+        title_y = canvas_h * 0.30
+        body_y = canvas_h * 0.42
+        button_w = max(240, canvas_w // 4)
+        button_h = max(72, canvas_h // 10)
+        button_x0 = (canvas_w - button_w) // 2
+        button_y0 = int(canvas_h * 0.56)
+        button_x1 = button_x0 + button_w
+        button_y1 = button_y0 + button_h
+
+        ui.canvas.create_text(
+            canvas_w // 2,
+            int(title_y),
+            text="EEG State Labeling",
+            fill=TEXT_COLOR,
+            font=ui.heading_font,
+            justify=tk.CENTER,
+        )
+        ui.canvas.create_text(
+            canvas_w // 2,
+            int(body_y),
+            text="Click Start to begin.",
+            fill=SUBTEXT_COLOR,
+            font=ui.body_font,
+            justify=tk.CENTER,
+        )
+        ui.canvas.create_rectangle(
+            button_x0,
+            button_y0,
+            button_x1,
+            button_y1,
+            fill=ACCENT_COLOR,
+            outline=ACCENT_COLOR,
+            width=2,
+        )
+        ui.canvas.create_text(
+            canvas_w // 2,
+            (button_y0 + button_y1) // 2,
+            text="START",
+            fill=BG_COLOR,
+            font=ui.body_font,
+            justify=tk.CENTER,
+        )
+        ui.canvas.create_text(
+            canvas_w // 2,
+            int(canvas_h * 0.74),
+            text="Press Enter/Space to start. Esc aborts.",
+            fill=SUBTEXT_COLOR,
+            font=ui.subtext_font,
+            justify=tk.CENTER,
+        )
+        return (button_x0, button_y0, button_x1, button_y1)
+
+    def request_start(_event: tk.Event | None = None) -> None:
+        nonlocal started
+        started = True
+
+    def handle_click(event: tk.Event) -> None:
+        x0, y0, x1, y1 = button_bounds
+        if x0 <= event.x <= x1 and y0 <= event.y <= y1:
+            request_start()
+
+    def handle_resize(_event: tk.Event) -> None:
+        nonlocal button_bounds
+        button_bounds = draw_start_prompt()
+
+    ui.root.bind("<Return>", request_start)
+    ui.root.bind("<space>", request_start)
+    ui.canvas.bind("<Button-1>", handle_click)
+    ui.root.bind("<Configure>", handle_resize)
+
+    try:
+        button_bounds = draw_start_prompt()
+        pump_events(ui)
+        while not started:
+            pump_events(ui)
+            time.sleep(0.01)
+    finally:
+        ui.root.unbind("<Return>")
+        ui.root.unbind("<space>")
+        ui.canvas.unbind("<Button-1>")
+        ui.root.unbind("<Configure>")
+
+
 def fixation_lines(
     heading_font: tkfont.Font, body_font: tkfont.Font
 ) -> list[Line]:
@@ -368,6 +462,7 @@ def run_experiment(config: Config) -> int:
     ui = create_tk_ui(config.fullscreen)
 
     try:
+        wait_for_start(ui)
         draw_centered_lines(ui, fixation_lines(ui.heading_font, ui.body_font))
         wait_seconds(config.initial_fixation, ui)
 
